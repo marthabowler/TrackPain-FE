@@ -7,7 +7,7 @@ export default function NavBar(): JSX.Element {
       <nav className="navbar navbar-expand-lg navbar-light bg-info">
         <div className="container-fluid">
           <div className="track-health-title">
-            <h1>TrackHealth</h1>
+            <h1>TrackPain</h1>
           </div>
           <ul className="navbar-nav">
             <li className="nav-item">
