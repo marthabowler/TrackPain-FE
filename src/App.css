@@ -1,3 +1,7 @@
 .chart {
-  max-height: 20px;
+  max-height: 500px;
+}
+
+.input-data {
+  margin: 10px;
 }
