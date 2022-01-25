@@ -50,7 +50,8 @@ export default function Graph(props: GraphProps): JSX.Element {
 
   return (
     <>
-      <div>
+      <div className="container" data-testid="homepage">
+        <h1>Statistics</h1>
         {chartData ? (
           <Line className="chart" data={chartData} />
         ) : (

@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { PainType } from "./utils/Types/PainType";
 import { config } from "dotenv";
 import Graph from "./Components/Graph";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { InterestingData } from "./Components/InterestingData";
+import { InputData } from "./Components/InputData";
+import NavBar from "./Components/NavBar";
 
 config();
 
@@ -23,7 +27,17 @@ function App(): JSX.Element {
 
   return (
     <>
-      <Graph painData={painData} />
+      <>
+        <Router>
+          <NavBar />
+          <Routes>
+            {/* different pages */}
+            <Route path="/" element={<Graph painData={painData} />} />
+            <Route path="/data" element={<InterestingData />} />
+            <Route path="/input-data" element={<InputData />} />
+          </Routes>
+        </Router>
+      </>
     </>
   );
 }
