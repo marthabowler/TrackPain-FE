@@ -1,5 +1,15 @@
+import { useState } from "react";
+import { InputType } from "../utils/Types/InputType";
+
 export function InputData(): JSX.Element {
-  const painLevel = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const [input, setInput] = useState<InputType>({
+    seriousness: 0,
+    description: "",
+    painkiller_name: "",
+    condition_name: "",
+  });
+  const [hover, setHover] = useState(0);
+
   return (
     <>
       <h1>Input Data</h1>
@@ -8,12 +18,27 @@ export function InputData(): JSX.Element {
         <div className="form-group">
           <label>How much pain are you in?</label>
           <br />
-          {painLevel.map((level) => (
-            <div key={level} className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" />
-              <label className="form-check-label">{level}</label>
-            </div>
-          ))}
+          <div className="star-rating">
+            {[...Array(10)].map((star, index) => {
+              index += 1;
+              return (
+                <button
+                  type="button"
+                  key={index}
+                  className={
+                    index <= (hover || input.seriousness) ? "on" : "off"
+                  }
+                  onClick={() => {
+                    setInput({ ...input, seriousness: index });
+                  }}
+                  onMouseEnter={() => setHover(index)}
+                  onMouseLeave={() => setHover(input.seriousness)}
+                >
+                  <span className="star">&#9733;</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         <br />
         <div className="form-group">
