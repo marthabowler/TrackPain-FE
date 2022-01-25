@@ -2,6 +2,27 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { PainType } from "./utils/Types/PainType";
 import { config } from "dotenv";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 config();
 
@@ -20,22 +41,22 @@ function App(): JSX.Element {
     getPainData();
   }, []);
 
-  return (
-    <>
-      {painData.length > 0 ? (
-        painData.map((dataPoint) => (
-          <div key={dataPoint.pain_id}>
-            <p>time: {dataPoint.time}</p>
-            <p>condition: {dataPoint.condition_name}</p>
-            <p>description: {dataPoint.description}</p>
-            <p>how bad was it: {dataPoint.description}</p>
-          </div>
-        ))
-      ) : (
-        <p>loading data</p>
-      )}
-    </>
-  );
+  const chartData = {
+    labels: painData.map((dataPoint: { time: string }) => dataPoint.time),
+    datasets: [
+      {
+        label: "Pain seriousness",
+        data: painData.map(
+          (dataPoint: { seriousness: number }) => dataPoint.seriousness
+        ),
+        fill: true,
+        backgroundColor: "rgba(75,192,192,0.2)",
+        borderColor: "rgba(75,192,192,1)",
+      },
+    ],
+  };
+
+  return <>{chartData ? <Line data={chartData} /> : <p>Data Loading</p>}</>;
 }
 
 export default App;
