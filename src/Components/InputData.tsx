@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ConditionsType } from "../utils/Types/ConditionsType";
 import { InputType } from "../utils/Types/InputType";
 import { PainkillerType } from "../utils/Types/PainkillerType";
+import { useNavigate } from "react-router-dom";
 
 interface InputDataProps {
   conditionsData: ConditionsType[];
@@ -19,6 +20,29 @@ export function InputData(props: InputDataProps): JSX.Element {
     condition_name: "",
   });
   const [hover, setHover] = useState(0);
+  const navigate = useNavigate();
+
+  async function handlePostPain(
+    painkillerData: PainkillerType[],
+    conditionData: ConditionsType[],
+    inputForm: InputType
+  ) {
+    try {
+      const response = await axios.post(`${apiBaseURL}pain`, {
+        seriousness: inputForm.seriousness,
+        description: inputForm.description,
+        condition_id: findConditionsID(inputForm.condition_name, conditionData),
+        painkiller_id: findPainkillerID(
+          inputForm.painkiller_name,
+          painkillerData
+        ),
+      });
+      navigate("/");
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   return (
     <>
@@ -114,27 +138,6 @@ function findConditionsID(name: string, array: ConditionsType[]) {
 function findPainkillerID(name: string, array: PainkillerType[]) {
   return array.find((element) => element.painkiller_name === name)
     ?.painkiller_id;
-}
-
-async function handlePostPain(
-  painkillerData: PainkillerType[],
-  conditionData: ConditionsType[],
-  inputForm: InputType
-) {
-  try {
-    const response = await axios.post(`${apiBaseURL}pain`, {
-      seriousness: inputForm.seriousness,
-      description: inputForm.description,
-      condition_id: findConditionsID(inputForm.condition_name, conditionData),
-      painkiller_id: findPainkillerID(
-        inputForm.painkiller_name,
-        painkillerData
-      ),
-    });
-    console.log(response);
-  } catch (err) {
-    console.log(err);
-  }
 }
 
 async function handleAddPainkiller(
