@@ -1,5 +1,5 @@
 import { PainType } from "../utils/Types/PainType";
-import { Line } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import moment from "moment";
 
 import {
@@ -11,6 +11,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  BarElement,
 } from "chart.js";
 
 ChartJS.register(
@@ -19,6 +20,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
+  BarElement,
   Tooltip,
   Legend
 );
@@ -34,21 +36,28 @@ export default function Graph(props: GraphProps): JSX.Element {
     ),
     datasets: [
       {
-        label: "Pain seriousness",
+        label: "pain level",
         data: props.painData.map(
           (dataPoint: { seriousness: number }) => dataPoint.seriousness
         ),
         backgroundColor: "#FF0080",
         borderColor: "#FF8C00",
       },
-      {
-        label: "Painkiller",
-        data: props.painData.map(
-          (dataPoint: { painkiller_id: number }) => dataPoint.painkiller_id
-        ),
+    ],
+  };
 
-        backgroundColor: "#40E0D0",
-        borderColor: "#12c2e9",
+  const painKillerData = {
+    labels: props.painData.map(
+      (dataPoint: { painkiller_name: string }) => dataPoint.painkiller_name
+    ),
+    datasets: [
+      {
+        label: "pain level",
+        data: props.painData.map(
+          (dataPoint: { seriousness: number }) => dataPoint.seriousness
+        ),
+        backgroundColor: "#FF0080",
+        borderColor: "#FF8C00",
       },
     ],
   };
@@ -59,6 +68,11 @@ export default function Graph(props: GraphProps): JSX.Element {
         <h1>Statistics</h1>
         {chartData ? (
           <Line className="chart" data={chartData} />
+        ) : (
+          <p>Data Loading</p>
+        )}
+        {chartData ? (
+          <Bar className="chart" data={painKillerData} />
         ) : (
           <p>Data Loading</p>
         )}
