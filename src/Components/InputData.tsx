@@ -47,7 +47,7 @@ export function InputData(props: InputDataProps): JSX.Element {
                   onMouseEnter={() => setHover(index)}
                   onMouseLeave={() => setHover(input.seriousness)}
                 >
-                  <span className="star">&#9733;</span>
+                  <i className="large material-icons">add_circle</i>
                 </button>
               );
             })}

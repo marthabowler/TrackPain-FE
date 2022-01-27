@@ -67,7 +67,7 @@ export default function Graph(props: GraphProps): JSX.Element {
       <div className="container" data-testid="homepage">
         <h1>Statistics</h1>
         {finalCondtionsArray.map((element, index) => (
-          <>
+          <div key={index}>
             <p>
               {
                 props.painData.find(
@@ -76,7 +76,6 @@ export default function Graph(props: GraphProps): JSX.Element {
               }
             </p>
             <Line
-              key={index}
               className="chart"
               data={createChartData(
                 props.painData.filter(
@@ -84,7 +83,7 @@ export default function Graph(props: GraphProps): JSX.Element {
                 )
               )}
             />
-          </>
+          </div>
         ))}
       </div>
     </>

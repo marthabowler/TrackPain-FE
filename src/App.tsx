@@ -6,7 +6,7 @@ import { ConditionsType } from "./utils/Types/ConditionsType";
 import { config } from "dotenv";
 import Graph from "./Components/Graph";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import { InterestingData } from "./Components/InterestingData";
+import InterestingData from "./Components/InterestingData";
 import { InputData } from "./Components/InputData";
 import NavBar from "./Components/NavBar";
 import "./App.css";
