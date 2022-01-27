@@ -3,11 +3,13 @@ import { useState } from "react";
 import { ConditionsType } from "../utils/Types/ConditionsType";
 import { InputType } from "../utils/Types/InputType";
 import { PainkillerType } from "../utils/Types/PainkillerType";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface InputDataProps {
   conditionsData: ConditionsType[];
   painkillerData: PainkillerType[];
+  setPainkillerData: (input: PainkillerType[]) => void;
+  setConditionsData: (input: ConditionsType[]) => void;
 }
 
 const apiBaseURL = process.env.REACT_APP_API_BASE;
@@ -20,29 +22,6 @@ export function InputData(props: InputDataProps): JSX.Element {
     condition_name: "",
   });
   const [hover, setHover] = useState(0);
-  const navigate = useNavigate();
-
-  async function handlePostPain(
-    painkillerData: PainkillerType[],
-    conditionData: ConditionsType[],
-    inputForm: InputType
-  ) {
-    try {
-      const response = await axios.post(`${apiBaseURL}pain`, {
-        seriousness: inputForm.seriousness,
-        description: inputForm.description,
-        condition_id: findConditionsID(inputForm.condition_name, conditionData),
-        painkiller_id: findPainkillerID(
-          inputForm.painkiller_name,
-          painkillerData
-        ),
-      });
-      navigate("/");
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   return (
     <>
@@ -96,7 +75,13 @@ export function InputData(props: InputDataProps): JSX.Element {
             onChange={(e) =>
               setInput({ ...input, condition_name: e.target.value })
             }
-            onMouseLeave={() => handleAddCondition(input, props.conditionsData)}
+            onMouseLeave={() =>
+              handleAddCondition(
+                input,
+                props.conditionsData,
+                props.setConditionsData
+              )
+            }
           />
         </div>
         <br />
@@ -113,19 +98,25 @@ export function InputData(props: InputDataProps): JSX.Element {
               console.log(input.painkiller_name);
             }}
             onMouseLeave={() =>
-              handleAddPainkiller(input, props.painkillerData)
+              handleAddPainkiller(
+                input,
+                props.painkillerData,
+                props.setPainkillerData
+              )
             }
           />
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          onClick={() => {
-            handlePostPain(props.painkillerData, props.conditionsData, input);
-          }}
-        >
-          Submit
-        </button>
+        <Link to="/">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            onClick={() => {
+              handlePostPain(props.painkillerData, props.conditionsData, input);
+            }}
+          >
+            Submit
+          </button>
+        </Link>
       </form>
     </>
   );
@@ -142,7 +133,8 @@ function findPainkillerID(name: string, array: PainkillerType[]) {
 
 async function handleAddPainkiller(
   inputForm: InputType,
-  painkillerData: PainkillerType[]
+  painkillerData: PainkillerType[],
+  setPainkillerData: (input: PainkillerType[]) => void
 ) {
   if (
     painkillerData.filter(
@@ -154,6 +146,8 @@ async function handleAddPainkiller(
       const response = await axios.post(`${apiBaseURL}painkiller`, {
         painkiller_name: inputForm.painkiller_name,
       });
+      const painkillerResponse = await axios.get(`${apiBaseURL}painkillers`);
+      setPainkillerData(painkillerResponse.data.data);
       console.log(response);
     } catch (err) {
       console.log(err);
@@ -163,7 +157,8 @@ async function handleAddPainkiller(
 
 async function handleAddCondition(
   inputForm: InputType,
-  conditionData: ConditionsType[]
+  conditionData: ConditionsType[],
+  setConditionsData: (input: ConditionsType[]) => void
 ) {
   if (
     !conditionData.find(
@@ -174,9 +169,32 @@ async function handleAddCondition(
       const response = await axios.post(`${apiBaseURL}conditions`, {
         condition_name: inputForm.condition_name,
       });
+      const conditionsResponse = await axios.get(`${apiBaseURL}conditions`);
+      setConditionsData(conditionsResponse.data.data);
       console.log(response);
     } catch (err) {
       console.log(err);
     }
+  }
+}
+
+async function handlePostPain(
+  painkillerData: PainkillerType[],
+  conditionData: ConditionsType[],
+  inputForm: InputType
+) {
+  try {
+    const response = await axios.post(`${apiBaseURL}pain`, {
+      seriousness: inputForm.seriousness,
+      description: inputForm.description,
+      condition_id: findConditionsID(inputForm.condition_name, conditionData),
+      painkiller_id: findPainkillerID(
+        inputForm.painkiller_name,
+        painkillerData
+      ),
+    });
+    console.log(response);
+  } catch (err) {
+    console.log(err);
   }
 }
