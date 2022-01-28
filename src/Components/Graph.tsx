@@ -64,7 +64,7 @@ export default function Graph(props: GraphProps): JSX.Element {
   return (
     <>
       <div className="container" data-testid="homepage">
-        <h1>Statistics</h1>
+        <h1>Monitor your conditions</h1>
         {finalCondtionsArray.map((element, index) => (
           <div key={index}>
             <p>
