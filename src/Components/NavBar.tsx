@@ -11,7 +11,7 @@ export default function NavBar(props: NavBarProps): JSX.Element {
       <nav className="navbar navbar-expand-lg navbar-light bg-info">
         <div className="container-fluid">
           <div className="track-health-title">
-            <h1>🛤️Pain Tracks🛤️ </h1>
+            <h1>PainTracks</h1>
           </div>
           <ul className="navbar-nav">
             <li className="nav-item text-left">
