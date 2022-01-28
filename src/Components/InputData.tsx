@@ -4,12 +4,18 @@ import { ConditionsType } from "../utils/Types/ConditionsType";
 import { InputType } from "../utils/Types/InputType";
 import { PainkillerType } from "../utils/Types/PainkillerType";
 import { Link } from "react-router-dom";
+import { PainType } from "../utils/Types/PainType";
+import { UserConditionsType } from "../utils/Types/UserConditionType";
+import { UserType } from "../utils/Types/UserType";
 
 interface InputDataProps {
   conditionsData: ConditionsType[];
   painkillerData: PainkillerType[];
   setPainkillerData: (input: PainkillerType[]) => void;
   setConditionsData: (input: ConditionsType[]) => void;
+  setPainData: (input: PainType[]) => void;
+  setSignedUserConditions: (input: UserConditionsType[]) => void;
+  signedInUser: UserType;
 }
 
 const apiBaseURL = process.env.REACT_APP_API_BASE;
@@ -95,7 +101,6 @@ export function InputData(props: InputDataProps): JSX.Element {
             value={input.painkiller_name}
             onChange={(e) => {
               setInput({ ...input, painkiller_name: e.target.value });
-              console.log(input.painkiller_name);
             }}
             onMouseLeave={() =>
               handleAddPainkiller(
@@ -111,7 +116,14 @@ export function InputData(props: InputDataProps): JSX.Element {
             type="submit"
             className="btn btn-primary"
             onClick={() => {
-              handlePostPain(props.painkillerData, props.conditionsData, input);
+              handlePostPain(
+                props.painkillerData,
+                props.conditionsData,
+                input,
+                props.setPainData,
+                props.setSignedUserConditions,
+                props.signedInUser
+              );
             }}
           >
             Submit
@@ -143,12 +155,11 @@ async function handleAddPainkiller(
   ) {
     try {
       console.log(inputForm.painkiller_name);
-      const response = await axios.post(`${apiBaseURL}painkiller`, {
+      await axios.post(`${apiBaseURL}painkiller`, {
         painkiller_name: inputForm.painkiller_name,
       });
       const painkillerResponse = await axios.get(`${apiBaseURL}painkillers`);
       setPainkillerData(painkillerResponse.data.data);
-      console.log(response);
     } catch (err) {
       console.log(err);
     }
@@ -166,12 +177,11 @@ async function handleAddCondition(
     )
   ) {
     try {
-      const response = await axios.post(`${apiBaseURL}conditions`, {
+      await axios.post(`${apiBaseURL}conditions`, {
         condition_name: inputForm.condition_name,
       });
       const conditionsResponse = await axios.get(`${apiBaseURL}conditions`);
       setConditionsData(conditionsResponse.data.data);
-      console.log(response);
     } catch (err) {
       console.log(err);
     }
@@ -181,10 +191,13 @@ async function handleAddCondition(
 async function handlePostPain(
   painkillerData: PainkillerType[],
   conditionData: ConditionsType[],
-  inputForm: InputType
+  inputForm: InputType,
+  setPainData: (input: PainType[]) => void,
+  setSignedUserConditions: (input: UserConditionsType[]) => void,
+  signedInUser: UserType
 ) {
   try {
-    const response = await axios.post(`${apiBaseURL}pain`, {
+    await axios.post(`${apiBaseURL}pain`, {
       seriousness: inputForm.seriousness,
       description: inputForm.description,
       condition_id: findConditionsID(inputForm.condition_name, conditionData),
@@ -193,7 +206,12 @@ async function handlePostPain(
         painkillerData
       ),
     });
-    console.log(response);
+    const painResponse = await axios.get(`${apiBaseURL}pain`);
+    setPainData(painResponse.data.data);
+    const signedInUserResponse = await axios.get(
+      `${apiBaseURL}user/${signedInUser.user_id}`
+    );
+    setSignedUserConditions(signedInUserResponse.data.data);
   } catch (err) {
     console.log(err);
   }

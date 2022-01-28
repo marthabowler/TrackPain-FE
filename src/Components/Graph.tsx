@@ -38,7 +38,6 @@ export default function Graph(props: GraphProps): JSX.Element {
     !finalCondtionsArray.includes(element.condition_id) &&
       finalCondtionsArray.push(element.condition_id);
   });
-  console.log(props.painData);
 
   function createChartData(
     singlePainData: PainType[]

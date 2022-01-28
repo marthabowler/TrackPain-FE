@@ -64,7 +64,7 @@ function App(): JSX.Element {
     <>
       <>
         <Router>
-          <NavBar />
+          <NavBar signedInUser={signedInUser} />
           <Routes>
             {/* different pages */}
             <Route
@@ -85,6 +85,9 @@ function App(): JSX.Element {
                   conditionsData={conditionsData}
                   setPainkillerData={setPainkillerData}
                   setConditionsData={setConditionsData}
+                  setPainData={setPainData}
+                  signedInUser={signedInUser}
+                  setSignedUserConditions={setSignedUserConditions}
                 />
               }
             />

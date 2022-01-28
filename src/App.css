@@ -18,3 +18,11 @@ button {
 .off {
   color: #ccc;
 }
+
+.log-in p {
+  margin: auto;
+}
+
+.navbar-nav li {
+  margin: 0 auto;
+}
