@@ -20,10 +20,32 @@ interface InputDataProps {
 
 const apiBaseURL = process.env.REACT_APP_API_BASE;
 
+const colours = [
+  "secondary",
+  "primary",
+  "success",
+  "danger",
+  "warning",
+  "info",
+  "dark",
+  "light",
+];
+
+function randomIntFromInterval(colours: string[]) {
+  // min and max included
+  return colours[Math.floor(Math.random() * (colours.length - 1 - 0 + 1) + 0)];
+}
+
+interface medicationTakenType {
+  name: string;
+  colour: string;
+}
+
+const medicationTaken: medicationTakenType[] = [];
+
 export function InputData(props: InputDataProps): JSX.Element {
   const [input, setInput] = useState<InputType>({
     seriousness: 0,
-    description: "",
     painkiller_name: "",
     condition_name: "",
   });
@@ -60,56 +82,119 @@ export function InputData(props: InputDataProps): JSX.Element {
           </div>
         </div>
         <br />
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            className="form-control"
-            placeholder="Any unusual symptoms..."
-            value={input.description}
-            onChange={(e) =>
-              setInput({ ...input, description: e.target.value })
-            }
-          />
-        </div>
         <br />
         <div className="form-group">
-          <label>What condition is this regarding?</label>
+          <h3>What condition are you suffering with?</h3>
+          <div className="condition-dropdown">
+            <select
+              className="form-select form-control"
+              aria-label="default"
+              value={input.condition_name}
+              onChange={(e) =>
+                setInput({ ...input, condition_name: e.target.value })
+              }
+            >
+              <option>Choose a condition</option>
+              {props.conditionsData.map((condition, index) => (
+                <option key={index}>{condition.condition_name}</option>
+              ))}
+            </select>
+          </div>
           <input
+            type="text"
+            placeholder="Add a new condition"
             className="form-control"
-            placeholder="Condition"
-            value={input.condition_name}
             onChange={(e) =>
               setInput({ ...input, condition_name: e.target.value })
             }
-            onMouseLeave={() =>
-              handleAddCondition(
-                input,
-                props.conditionsData,
-                props.setConditionsData
-              )
-            }
           />
         </div>
+        <button
+          className="btn btn-info"
+          id="add-tag-button"
+          data-backdrop="static"
+          data-keyboard="false"
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddCondition(
+              input,
+              props.conditionsData,
+              props.setConditionsData
+            );
+          }}
+        >
+          Add condition
+        </button>
         <br />
         <div className="form-group">
           <label>
             Which painkiller did you take in the last 4 hours (if any)?
           </label>
+          <div className="condition-dropdown">
+            <select
+              className="form-select form-control"
+              aria-label="default"
+              onChange={(e) => {
+                setInput({ ...input, painkiller_name: e.target.value });
+                !medicationTaken.find(
+                  (element) => element.name === e.target.value
+                ) &&
+                  medicationTaken.push({
+                    name: e.target.value,
+                    colour: randomIntFromInterval(colours),
+                  });
+              }}
+            >
+              <hr />
+              <option>
+                What medication have you taken in the last four hours?
+              </option>
+              {props.painkillerData.map((painkiller, index) => (
+                <option key={index}>{painkiller.painkiller_name}</option>
+              ))}
+            </select>
+          </div>
           <input
+            type="text"
+            placeholder="Add a new painkiller"
             className="form-control"
-            placeholder="Painkiller"
-            value={input.painkiller_name}
-            onChange={(e) => {
-              setInput({ ...input, painkiller_name: e.target.value });
-            }}
-            onMouseLeave={() =>
-              handleAddPainkiller(
-                input,
-                props.painkillerData,
-                props.setPainkillerData
-              )
+            onChange={(e) =>
+              setInput({ ...input, painkiller_name: e.target.value })
             }
           />
+        </div>
+        <button
+          className="btn btn-info"
+          id="add-tag-button"
+          data-backdrop="static"
+          data-keyboard="false"
+          onClick={(e) => {
+            e.preventDefault();
+            !medicationTaken.find(
+              (element) => element.name === input.painkiller_name
+            ) &&
+              medicationTaken.push({
+                name: input.painkiller_name,
+                colour: randomIntFromInterval(colours),
+              });
+            handleAddPainkiller(
+              input,
+              props.painkillerData,
+              props.setPainkillerData
+            );
+          }}
+        >
+          Add painkiller
+        </button>
+        <div>
+          {medicationTaken.map((medication, index) => (
+            <span
+              key={index}
+              className={`badge rounded-pill bg-${medication.colour} text-dark`}
+            >
+              {medication.name}
+            </span>
+          ))}
         </div>
         <Link to="/">
           <button
@@ -122,7 +207,8 @@ export function InputData(props: InputDataProps): JSX.Element {
                 input,
                 props.setPainData,
                 props.setSignedUserConditions,
-                props.signedInUser
+                props.signedInUser,
+                medicationTaken
               );
             }}
           >
@@ -151,7 +237,8 @@ async function handleAddPainkiller(
   if (
     painkillerData.filter(
       (element) => element.painkiller_name === inputForm.painkiller_name
-    ).length === 0
+    ).length === 0 &&
+    inputForm.painkiller_name !== ""
   ) {
     try {
       console.log(inputForm.painkiller_name);
@@ -174,7 +261,8 @@ async function handleAddCondition(
   if (
     !conditionData.find(
       (element) => element.condition_name === inputForm.condition_name
-    )
+    ) &&
+    inputForm.condition_name !== ""
   ) {
     try {
       await axios.post(`${apiBaseURL}conditions`, {
@@ -194,25 +282,29 @@ async function handlePostPain(
   inputForm: InputType,
   setPainData: (input: PainType[]) => void,
   setSignedUserConditions: (input: UserConditionsType[]) => void,
-  signedInUser: UserType
+  signedInUser: UserType,
+  medicationTaken: medicationTakenType[]
 ) {
-  try {
-    await axios.post(`${apiBaseURL}pain`, {
-      seriousness: inputForm.seriousness,
-      description: inputForm.description,
-      condition_id: findConditionsID(inputForm.condition_name, conditionData),
-      painkiller_id: findPainkillerID(
-        inputForm.painkiller_name,
-        painkillerData
-      ),
-    });
-    const painResponse = await axios.get(`${apiBaseURL}pain`);
-    setPainData(painResponse.data.data);
-    const signedInUserResponse = await axios.get(
-      `${apiBaseURL}user/${signedInUser.user_id}`
-    );
-    setSignedUserConditions(signedInUserResponse.data.data);
-  } catch (err) {
-    console.log(err);
+  for (const medication of medicationTaken) {
+    if (inputForm.condition_name !== "") {
+      try {
+        await axios.post(`${apiBaseURL}pain`, {
+          seriousness: inputForm.seriousness,
+          condition_id: findConditionsID(
+            inputForm.condition_name,
+            conditionData
+          ),
+          painkiller_id: findPainkillerID(medication.name, painkillerData),
+        });
+        const painResponse = await axios.get(`${apiBaseURL}pain`);
+        setPainData(painResponse.data.data);
+        const signedInUserResponse = await axios.get(
+          `${apiBaseURL}user/${signedInUser.user_id}`
+        );
+        setSignedUserConditions(signedInUserResponse.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
   }
 }
