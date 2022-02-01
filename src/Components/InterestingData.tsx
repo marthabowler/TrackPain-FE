@@ -57,21 +57,25 @@ export default function InterestingData(): JSX.Element {
   }
 
   function createChartData(painkillerCorrelation: PainkillerCorrelationType[]) {
+    const datasets = [];
+
+    for (const disease of createDiseaseArray(painkillerCorrelation)) {
+      const oneLine = {
+        label: findConditionName(painkillerCorrelation, disease),
+        data: filterDataByCondition(painkillerCorrelation, disease).map(
+          (dataPoint: { avg: string }) => parseInt(dataPoint.avg)
+        ),
+        backgroundColor: "#FF0080",
+        borderColor: "#FF8C00",
+      };
+      datasets.push(oneLine);
+    }
+
     const data = {
       labels: painkillerCorrelation.map(
         (dataPoint: { painkiller_name: string }) => dataPoint.painkiller_name
       ),
-
-      datasets: [
-        {
-          label: "pain level",
-          data: painkillerCorrelation.map((dataPoint: { avg: string }) =>
-            parseInt(dataPoint.avg)
-          ),
-          backgroundColor: "#FF0080",
-          borderColor: "#FF8C00",
-        },
-      ],
+      datasets: datasets,
     };
     return data;
   }
@@ -85,27 +89,26 @@ export default function InterestingData(): JSX.Element {
           infer causation⚠️
         </small>
         <hr />
-
-        {createDiseaseArray(painkillerCorrelation).map((element, index) => (
-          <div key={index}>
-            <p>
-              {
-                painkillerCorrelation.find(
-                  (condition) => condition.condition_id === element
-                )?.condition_name
-              }
-            </p>
-            <Bar
-              className="chart"
-              data={createChartData(
-                painkillerCorrelation.filter(
-                  (condition) => condition.condition_id === element
-                )
-              )}
-            />
-          </div>
-        ))}
+        <Bar className="chart" data={createChartData(painkillerCorrelation)} />
       </div>
     </>
+  );
+}
+
+function findConditionName(
+  painkillerCorrelation: PainkillerCorrelationType[],
+  element: number
+) {
+  return painkillerCorrelation.find(
+    (condition) => condition.condition_id === element
+  )?.condition_name;
+}
+
+function filterDataByCondition(
+  painkillerCorrelation: PainkillerCorrelationType[],
+  disease: number
+) {
+  return painkillerCorrelation.filter(
+    (condition) => condition.condition_id === disease
   );
 }
