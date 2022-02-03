@@ -1,6 +1,18 @@
 .chart {
   max-height: 500px;
 }
+.new-painkiller {
+  display: flex;
+  flex-direction: row;
+}
+
+.painkiller p {
+  margin: auto 0;
+}
+
+.painkiller label {
+  margin: auto 0;
+}
 
 .input-data {
   margin: 10px;

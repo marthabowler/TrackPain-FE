@@ -3,10 +3,11 @@ import { useState } from "react";
 import { ConditionsType } from "../utils/Types/ConditionsType";
 import { InputType } from "../utils/Types/InputType";
 import { PainkillerType } from "../utils/Types/PainkillerType";
-import { Link } from "react-router-dom";
 import { PainType } from "../utils/Types/PainType";
 import { UserConditionsType } from "../utils/Types/UserConditionType";
 import { UserType } from "../utils/Types/UserType";
+import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
 
 interface InputDataProps {
   conditionsData: ConditionsType[];
@@ -39,17 +40,52 @@ function randomIntFromInterval(colours: string[]) {
 interface medicationTakenType {
   name: string;
   colour: string;
+  effectiveness: boolean;
 }
 
-const medicationTaken: medicationTakenType[] = [];
+let medicationTaken: medicationTakenType[] = [];
 
 export function InputData(props: InputDataProps): JSX.Element {
   const [input, setInput] = useState<InputType>({
     seriousness: 0,
-    painkiller_name: "",
     condition_name: "",
   });
   const [hover, setHover] = useState(0);
+  const [painkiller, setPainkiller] = useState<string>("");
+  const [effectiveness, setEffectiveness] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+
+  async function handlePostPain(
+    painkillerData: PainkillerType[],
+    conditionData: ConditionsType[],
+    inputForm: InputType,
+    setPainData: (input: PainType[]) => void,
+    setSignedUserConditions: (input: UserConditionsType[]) => void,
+    signedInUser: UserType
+  ) {
+    if (inputForm.condition_name !== "") {
+      try {
+        await axios.post(`${apiBaseURL}pain`, {
+          seriousness: inputForm.seriousness,
+          condition_id: findConditionsID(
+            inputForm.condition_name,
+            conditionData
+          ),
+        });
+        navigate("/");
+        toast.success("Added Pain");
+        const painResponse = await axios.get(`${apiBaseURL}pain`);
+        setPainData(painResponse.data.data);
+        const signedInUserResponse = await axios.get(
+          `${apiBaseURL}user/${signedInUser.user_id}`
+        );
+        setSignedUserConditions(signedInUserResponse.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
 
   return (
     <>
@@ -82,87 +118,103 @@ export function InputData(props: InputDataProps): JSX.Element {
           </div>
         </div>
         <br />
-        <br />
         <div className="form-group">
           <h3>What condition are you suffering with?</h3>
-          <div className="condition-dropdown">
-            <select
-              className="form-select form-control"
-              aria-label="default"
-              value={input.condition_name}
-              onChange={(e) =>
-                setInput({ ...input, condition_name: e.target.value })
-              }
+          <div className="row">
+            <div className="condition-dropdown col-3">
+              <select
+                className="form-select form-control"
+                aria-label="default"
+                value={input.condition_name}
+                onChange={(e) =>
+                  setInput({ ...input, condition_name: e.target.value })
+                }
+              >
+                <option>Choose a condition</option>
+                {props.conditionsData.map((condition, index) => (
+                  <option key={index}>{condition.condition_name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-3">
+              <input
+                type="text"
+                placeholder="Add a new condition"
+                className="form-control"
+                onChange={(e) =>
+                  setInput({ ...input, condition_name: e.target.value })
+                }
+              />
+            </div>
+            <button
+              className="btn btn-info col-1"
+              id="add-tag-button"
+              data-backdrop="static"
+              data-keyboard="false"
+              onClick={(e) => {
+                e.preventDefault();
+                handleAddCondition(
+                  input,
+                  props.conditionsData,
+                  props.setConditionsData
+                );
+              }}
             >
-              <option>Choose a condition</option>
-              {props.conditionsData.map((condition, index) => (
-                <option key={index}>{condition.condition_name}</option>
-              ))}
-            </select>
+              Add
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Add a new condition"
-            className="form-control"
-            onChange={(e) =>
-              setInput({ ...input, condition_name: e.target.value })
-            }
-          />
+          {input.condition_name && (
+            <p>Added condition: {input.condition_name}</p>
+          )}
         </div>
-        <button
-          className="btn btn-info"
-          id="add-tag-button"
-          data-backdrop="static"
-          data-keyboard="false"
-          onClick={(e) => {
-            e.preventDefault();
-            handleAddCondition(
-              input,
-              props.conditionsData,
-              props.setConditionsData
-            );
-          }}
-        >
-          Add condition
-        </button>
         <br />
-        <div className="form-group">
+        <div className="form-group mt-5">
           <label>
             Which painkiller did you take in the last 4 hours (if any)?
           </label>
-          <div className="condition-dropdown">
-            <select
-              className="form-select form-control"
-              aria-label="default"
-              onChange={(e) => {
-                setInput({ ...input, painkiller_name: e.target.value });
-                !medicationTaken.find(
-                  (element) => element.name === e.target.value
-                ) &&
-                  medicationTaken.push({
-                    name: e.target.value,
-                    colour: randomIntFromInterval(colours),
-                  });
-              }}
-            >
-              <hr />
-              <option>
-                What medication have you taken in the last four hours?
-              </option>
-              {props.painkillerData.map((painkiller, index) => (
-                <option key={index}>{painkiller.painkiller_name}</option>
-              ))}
-            </select>
+          <div className="painkiller row">
+            <div className="condition-dropdown col-3">
+              <select
+                className="form-select form-control"
+                aria-label="default"
+                value={painkiller}
+                onChange={(e) => {
+                  setPainkiller(e.target.value);
+                }}
+              >
+                <hr />
+                <option>Select medication</option>
+                {props.painkillerData.map((painkiller, index) => (
+                  <option key={index}>{painkiller.painkiller_name}</option>
+                ))}
+              </select>
+            </div>
+            <p className="col-1">OR</p>
+            <div className="new-painkiller col-3">
+              <input
+                type="text"
+                placeholder="Add a new painkiller"
+                className="form-control"
+                onChange={(e) => {
+                  setPainkiller(e.target.value);
+                }}
+              />
+            </div>
+            <label className="col-2">
+              Has it worked?
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={effectiveness}
+                id="flexCheckDefault"
+                onChange={() => {
+                  setEffectiveness(!effectiveness);
+                }}
+              />
+            </label>
           </div>
-          <input
-            type="text"
-            placeholder="Add a new painkiller"
-            className="form-control"
-            onChange={(e) =>
-              setInput({ ...input, painkiller_name: e.target.value })
-            }
-          />
         </div>
+
         <button
           className="btn btn-info"
           id="add-tag-button"
@@ -170,18 +222,19 @@ export function InputData(props: InputDataProps): JSX.Element {
           data-keyboard="false"
           onClick={(e) => {
             e.preventDefault();
-            !medicationTaken.find(
-              (element) => element.name === input.painkiller_name
-            ) &&
-              medicationTaken.push({
-                name: input.painkiller_name,
-                colour: randomIntFromInterval(colours),
-              });
             handleAddPainkiller(
-              input,
+              painkiller,
               props.painkillerData,
               props.setPainkillerData
             );
+            !medicationTaken.find((element) => element.name === painkiller) &&
+              medicationTaken.push({
+                name: painkiller,
+                colour: randomIntFromInterval(colours),
+                effectiveness: effectiveness,
+              });
+            setPainkiller("");
+            effectiveness && setEffectiveness(!effectiveness);
           }}
         >
           Add painkiller
@@ -207,9 +260,16 @@ export function InputData(props: InputDataProps): JSX.Element {
                 input,
                 props.setPainData,
                 props.setSignedUserConditions,
-                props.signedInUser,
-                medicationTaken
+                props.signedInUser
               );
+              submitPainkillersTaken(
+                medicationTaken,
+                props.painkillerData,
+                props.conditionsData,
+                input,
+                props.signedInUser
+              );
+              medicationTaken = [];
             }}
           >
             Submit
@@ -230,20 +290,18 @@ function findPainkillerID(name: string, array: PainkillerType[]) {
 }
 
 async function handleAddPainkiller(
-  inputForm: InputType,
+  painkiller: string,
   painkillerData: PainkillerType[],
   setPainkillerData: (input: PainkillerType[]) => void
 ) {
   if (
-    painkillerData.filter(
-      (element) => element.painkiller_name === inputForm.painkiller_name
-    ).length === 0 &&
-    inputForm.painkiller_name !== ""
+    painkillerData.filter((element) => element.painkiller_name === painkiller)
+      .length === 0 &&
+    painkiller !== ""
   ) {
     try {
-      console.log(inputForm.painkiller_name);
       await axios.post(`${apiBaseURL}painkiller`, {
-        painkiller_name: inputForm.painkiller_name,
+        painkiller_name: painkiller,
       });
       const painkillerResponse = await axios.get(`${apiBaseURL}painkillers`);
       setPainkillerData(painkillerResponse.data.data);
@@ -276,35 +334,23 @@ async function handleAddCondition(
   }
 }
 
-async function handlePostPain(
+async function submitPainkillersTaken(
+  medicationTaken: medicationTakenType[],
   painkillerData: PainkillerType[],
   conditionData: ConditionsType[],
   inputForm: InputType,
-  setPainData: (input: PainType[]) => void,
-  setSignedUserConditions: (input: UserConditionsType[]) => void,
-  signedInUser: UserType,
-  medicationTaken: medicationTakenType[]
+  signedInUser: UserType
 ) {
   for (const medication of medicationTaken) {
-    if (inputForm.condition_name !== "") {
-      try {
-        await axios.post(`${apiBaseURL}pain`, {
-          seriousness: inputForm.seriousness,
-          condition_id: findConditionsID(
-            inputForm.condition_name,
-            conditionData
-          ),
-          painkiller_id: findPainkillerID(medication.name, painkillerData),
-        });
-        const painResponse = await axios.get(`${apiBaseURL}pain`);
-        setPainData(painResponse.data.data);
-        const signedInUserResponse = await axios.get(
-          `${apiBaseURL}user/${signedInUser.user_id}`
-        );
-        setSignedUserConditions(signedInUserResponse.data.data);
-      } catch (err) {
-        console.log(err);
-      }
+    try {
+      await axios.post(`${apiBaseURL}painkillertaken`, {
+        painkiller_id: findPainkillerID(medication.name, painkillerData),
+        condition_id: findConditionsID(inputForm.condition_name, conditionData),
+        user_id: signedInUser.user_id,
+        has_worked: medication.effectiveness,
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 }

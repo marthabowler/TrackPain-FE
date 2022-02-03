@@ -4,7 +4,6 @@ export interface PainType {
   seriousness: number;
   description: string;
   condition_id: number;
-  painkiller_id: number;
   user_id: number;
   username: string;
   painkiller_name: string;
