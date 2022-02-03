@@ -12,6 +12,8 @@ import NavBar from "./Components/NavBar";
 import "./App.css";
 import { PainkillerType } from "./utils/Types/PainkillerType";
 import { UserConditionsType } from "./utils/Types/UserConditionType";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 config();
 
@@ -93,6 +95,17 @@ function App(): JSX.Element {
             />
           </Routes>
         </Router>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </>
     </>
   );
