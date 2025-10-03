@@ -150,7 +150,7 @@ export default function InterestingData(): JSX.Element {
       <div className="container" data-testid="homepage">
         <h1>Data Across Users</h1>
         <small>
-          ⚠️Caution is advised when reading this data,correlation does not
+          ⚠️Caution is advised when reading this data, correlation does not
           infer causation⚠️
         </small>
 
